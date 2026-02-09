@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 家用商品推荐系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-section {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        text-align: center;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .welcome-section h1 {
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+    
+    .family-profile-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        animation: slideInLeft 0.6s ease-out;
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .categories-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .category-tag {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        animation: popIn 0.3s ease-out;
+    }
+    
+    @keyframes popIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+    
+    .recommendations-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        animation: slideInRight 0.6s ease-out;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .product-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+        cursor: pointer;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .product-image {
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .product-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .product-category {
+        font-size: 0.875rem;
+        color: #999;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .product-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        flex: 1;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>👋 欢迎，{{ user.username }}！</h1>
+    <p>为您的家庭推荐最合适的商品</p>
+</div>
+
+{% if user.family %}
+<div class="family-profile-section">
+    <h2 class="section-title">🏠 家庭画像 - {{ user.family.name }}</h2>
+    {% if family_profile.preferred_categories.all %}
+    <div class="categories-list">
+        {% for category in family_profile.preferred_categories.all %}
+        <span class="category-tag">{{ category.name }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #999;">还没有设置家庭偏好分类，<a href="{% url 'profile' %}" style="color: #667eea;">去设置</a></p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="recommendations-section">
+    <h2 class="section-title">✨ 为您推荐</h2>
+    {% if recommendations %}
+    <div class="products-grid">
+        {% for product in recommendations %}
+        <div class="product-card">
+            <div class="product-image">🛍️</div>
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-category">{{ product.category.name }}</div>
+            <div class="product-price">¥{{ product.price }}</div>
+            <div class="product-actions">
+                <a href="{% url 'product_detail' product.id %}" class="btn btn-secondary btn-small">查看</a>
+                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-small">加入购物车</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🤔</div>
+        <p>暂无推荐商品，快去浏览商品吧！</p>
+        <a href="{% url 'products' %}" class="btn btn-primary" style="margin-top: 1rem;">浏览商品</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="recommendations-section">
+    <h2 class="section-title">🔥 热门商品</h2>
+    {% if popular_products %}
+    <div class="products-grid">
+        {% for product in popular_products %}
+        <div class="product-card">
+            <div class="product-image">🛍️</div>
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-category">{{ product.category.name }}</div>
+            <div class="product-price">¥{{ product.price }}</div>
+            <div class="product-actions">
+                <a href="{% url 'product_detail' product.id %}" class="btn btn-secondary btn-small">查看</a>
+                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-small">加入购物车</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

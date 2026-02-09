@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}个人中心 - 家用商品推荐系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+    
+    .profile-sidebar {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+    
+    .profile-name {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-family {
+        text-align: center;
+        color: #999;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-box {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #999;
+        margin-top: 0.25rem;
+    }
+    
+    .profile-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .category-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .category-checkbox:hover {
+        background: #e9ecef;
+    }
+    
+    .category-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .order-item {
+        padding: 1.5rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        transition: all 0.3s;
+    }
+    
+    .order-item:hover {
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .order-id {
+        font-weight: 600;
+        color: #667eea;
+    }
+    
+    .order-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .order-info {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 0.875rem;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 style="color: white; margin-bottom: 2rem;">👤 个人中心</h1>
+
+<div class="profile-grid">
+    <div class="profile-sidebar">
+        <div class="profile-avatar">{{ user.username.0|upper }}</div>
+        <div class="profile-name">{{ user.username }}</div>
+        {% if user.family %}
+        <div class="profile-family">🏠 {{ user.family.name }}</div>
+        {% endif %}
+        
+        <div class="profile-stats">
+            <div class="stat-box">
+                <div class="stat-value">{{ orders|length }}</div>
+                <div class="stat-label">订单数</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">{{ cart_count }}</div>
+                <div class="stat-label">购物车</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-content">
+        {% if user.family %}
+        <div class="section-card">
+            <h2 class="section-title">🎯 家庭画像设置</h2>
+            <form method="post" action="{% url 'update_family_profile' %}">
+                {% csrf_token %}
+                <div class="categories-grid">
+                    {% for category in categories %}
+                    <label class="category-checkbox">
+                        <input type="checkbox" name="categories" value="{{ category.id }}"
+                               {% if category in family_profile.preferred_categories.all %}checked{% endif %}>
+                        <span>{{ category.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">保存设置</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <div class="section-card">
+            <h2 class="section-title">📦 我的订单</h2>
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-item">
+                    <div class="order-header">
+                        <span class="order-id">订单 #{{ order.id }}</span>
+                        <span class="order-status">{{ order.get_status_display }}</span>
+                    </div>
+                    <div class="order-info">
+                        <span>{{ order.created_at|date:"Y-m-d H:i" }}</span>
+                        <span style="font-weight: 600; color: #667eea;">¥{{ order.total_price }}</span>
+                    </div>
+                    <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary btn-small" style="margin-top: 1rem;">查看详情</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #999; padding: 2rem;">暂无订单</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

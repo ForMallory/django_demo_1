@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}购物车 - 家用商品推荐系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+    
+    .cart-items {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    }
+    
+    .cart-summary {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .cart-item {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        flex-shrink: 0;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-category {
+        color: #999;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-price {
+        font-size: 1.25rem;
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .item-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .quantity-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: #f0f0f0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .quantity-btn:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 0.25rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 1rem;
+        color: #667eea;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 4rem;
+    }
+    
+    .empty-cart-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .cart-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .cart-summary {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 style="color: white; margin-bottom: 2rem;">🛒 购物车</h1>
+
+{% if cart_items %}
+<div class="cart-container">
+    <div class="cart-items">
+        <h2 style="margin-bottom: 1.5rem;">商品列表</h2>
+        {% for item in cart_items %}
+        <div class="cart-item">
+            <div class="item-image">🛍️</div>
+            <div class="item-details">
+                <div class="item-name">{{ item.product.name }}</div>
+                <div class="item-category">{{ item.product.category.name }}</div>
+                <div class="item-price">¥{{ item.product.price }} × {{ item.quantity }}</div>
+            </div>
+            <div class="item-actions">
+                <form method="post" action="{% url 'update_cart_item' item.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <div class="quantity-control">
+                        <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" class="quantity-btn">-</button>
+                        <input type="number" class="quantity-input" value="{{ item.quantity }}" readonly>
+                        <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="quantity-btn">+</button>
+                    </div>
+                </form>
+                <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-small">移除</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="cart-summary">
+        <h2 style="margin-bottom: 1.5rem;">订单摘要</h2>
+        <div class="summary-row">
+            <span>商品数量</span>
+            <span>{{ cart.get_items_count }}</span>
+        </div>
+        <div class="summary-row">
+            <span>小计</span>
+            <span>¥{{ cart.get_total_price }}</span>
+        </div>
+        <div class="summary-total">
+            <span>总计</span>
+            <span>¥{{ cart.get_total_price }}</span>
+        </div>
+        <a href="{% url 'checkout' %}" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; text-align: center;">结算</a>
+        <a href="{% url 'products' %}" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; text-align: center;">继续购物</a>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2>购物车是空的</h2>
+        <p style="color: #999; margin: 1rem 0;">快去添加一些商品吧！</p>
+        <a href="{% url 'products' %}" class="btn btn-primary">去购物</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
