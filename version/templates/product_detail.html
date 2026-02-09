@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - 商品详情{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-detail-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .product-image-large {
+        width: 100%;
+        height: 400px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8rem;
+    }
+    
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .product-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .product-category-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        width: fit-content;
+    }
+    
+    .product-price-large {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .product-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .meta-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .meta-label {
+        font-size: 0.875rem;
+        color: #999;
+        margin-bottom: 0.25rem;
+    }
+    
+    .meta-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .product-description {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        line-height: 1.6;
+    }
+    
+    .product-actions-large {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .similar-products {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    }
+    
+    .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .similar-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .similar-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .similar-image {
+        width: 100%;
+        height: 120px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    @media (max-width: 768px) {
+        .product-detail-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <div>
+        <div class="product-image-large">🛍️</div>
+    </div>
+    
+    <div class="product-info">
+        <h1 class="product-title">{{ product.name }}</h1>
+        <span class="product-category-badge">{{ product.category.name }}</span>
+        <div class="product-price-large">¥{{ product.price }}</div>
+        
+        <div class="product-meta">
+            <div class="meta-item">
+                <div class="meta-label">库存</div>
+                <div class="meta-value">{{ product.stock }} 件</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">生命周期</div>
+                <div class="meta-value">{{ product.lifecycle }} 天</div>
+            </div>
+        </div>
+        
+        {% if product.description %}
+        <div class="product-description">
+            <strong>商品描述：</strong><br>
+            {{ product.description }}
+        </div>
+        {% endif %}
+        
+        <div class="product-actions-large">
+            {% if product.stock > 0 %}
+            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary" style="flex: 1; text-align: center;">加入购物车</a>
+            {% else %}
+            <button class="btn btn-secondary" style="flex: 1;" disabled>缺货</button>
+            {% endif %}
+            <a href="{% url 'products' %}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+</div>
+
+{% if similar_products %}
+<div class="similar-products">
+    <h2>相似商品推荐</h2>
+    <div class="similar-grid">
+        {% for similar in similar_products %}
+        <a href="{% url 'product_detail' similar.id %}" class="similar-card">
+            <div class="similar-image">🛍️</div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ similar.name }}</div>
+            <div style="color: #667eea; font-weight: 600;">¥{{ similar.price }}</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
